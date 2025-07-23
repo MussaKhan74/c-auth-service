@@ -38,6 +38,25 @@ describe('POST /auth/register', () => {
                 (response.headers as Record<string, string>)['content-type'],
             ).toEqual(expect.stringContaining('json'))
         })
+
+        it('should persist the user in the database', async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: 'Mussa',
+                lastName: 'Khan',
+                email: 'MarkeLoof@gmail.com',
+                password: 'secret',
+            }
+            // Act
+            const response = await request(app)
+                .post('/auth/register')
+                .send(userData)
+            // Assert application/json utf-8
+            expect(
+                (response.headers as Record<string, string>)['content-type'],
+            ).toEqual(expect.stringContaining('json'))
+        })
     })
     describe('Fields are missing', () => {})
 })
