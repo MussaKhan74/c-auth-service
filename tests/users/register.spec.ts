@@ -81,7 +81,30 @@ describe('POST /auth/register', () => {
             expect(users[0].email).toBe(userData.email)
         })
 
-        it.todo('should return an id of the created user')
+        it('should return an id of the created user', async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: 'Mussa',
+                lastName: 'Khan',
+                email: 'MarkeLoof@gmail.com',
+                password: 'secret',
+            }
+
+            // Act
+            const response = await request(app)
+                .post('/auth/register')
+                .send(userData)
+
+            // Assert
+            const userRepository = connection.getRepository(User)
+            const users = await userRepository.find()
+
+            expect(response.body).toHaveProperty('id')
+            expect((response.body as Record<string, string>).id).toBe(
+                users[0].id,
+            )
+        })
     })
     describe('Fields are missing', () => {})
 })
