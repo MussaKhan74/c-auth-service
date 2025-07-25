@@ -196,6 +196,9 @@ describe('POST /auth/register', () => {
 
             expect(users).toHaveLength(0)
         })
+        it.todo('should return 400 status code if firstName is missing')
+        it.todo('should return 400 status code if lastName is missing')
+        it.todo('should return 400 status code if password is missing')
     })
 
     describe('Fields are not in proper format', () => {
@@ -219,5 +222,12 @@ describe('POST /auth/register', () => {
 
             expect(user.email).toBe(userData.email.trim())
         })
+        it.todo('should return 400 if email is not a valid email')
+        it.todo(
+            'should return 400 if passowrd length is less than 8 characters',
+        )
+        it.todo(
+            'should return 400 if passowrd length is less than 8 characters',
+        )
     })
 })
