@@ -16,7 +16,7 @@ describe('POST /auth/register', () => {
         // Database truncate
         await connection.dropDatabase()
         await connection.synchronize()
-    })
+    }, 30000)
 
     afterAll(async () => {
         await connection.destroy()
@@ -195,6 +195,29 @@ describe('POST /auth/register', () => {
             const users = await userRepository.find()
 
             expect(users).toHaveLength(0)
+        })
+    })
+
+    describe('Fields are not in proper format', () => {
+        it('should trim the email field', async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: 'Mussa',
+                lastName: 'Khan',
+                email: ' MarkeLoof@gmail.com ',
+                password: 'secret',
+            }
+
+            // Act
+            await request(app).post('/auth/register').send(userData)
+            const userRepository = connection.getRepository(User)
+            const users = await userRepository.find()
+
+            // Assert
+            const user = users[0]
+
+            expect(user.email).toBe(userData.email.trim())
         })
     })
 })
