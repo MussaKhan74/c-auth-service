@@ -7,8 +7,8 @@ export const AppDataSource = new DataSource({
     type: 'postgres',
     url: Config.DB_URL,
     ssl: true,
-    // Don't use this in production
-    synchronize: Config.NODE_ENV === 'test' || Config.NODE_ENV === 'dev',
+    // Don't use this in production. Always keep false
+    synchronize: false,
     logging: false,
     entities: [User],
     migrations: [],
