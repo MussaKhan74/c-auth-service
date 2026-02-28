@@ -18,7 +18,7 @@ describe('POST /auth/register', () => {
         // Database truncate
         await connection.dropDatabase()
         await connection.synchronize()
-    }, 30000)
+    })
 
     afterAll(async () => {
         await connection.destroy()
