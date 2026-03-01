@@ -9,9 +9,9 @@ export const AppDataSource = new DataSource({
     url: Config.DB_URL,
     ssl: true,
     // Don't use this in production. Always keep false
-    synchronize: true,
+    synchronize: false,
     logging: false,
     entities: [User, RefreshToken],
-    migrations: [],
+    migrations: ['src/migration/*.ts'],
     subscribers: [],
 })

@@ -12,7 +12,9 @@
         "test": "jest --watch --runInBand --verbose",
         "prepare": "husky",
         "start": "ts-node src/server.ts",
-        "typeorm": "typeorm-ts-node-commonjs"
+        "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/config/data-source.ts",
+        "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/data-source.ts",
+        "migration:create": "typeorm-ts-node-commonjs migration:create -d src/config/data-source.ts"
     },
     "author": "Mussa Khan Shaukat <MarkeLoof@gmail.com>",
     "license": "ISC",
