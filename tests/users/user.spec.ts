@@ -37,7 +37,7 @@ describe('GET /auth/self', () => {
             })
             const response = await request(app)
                 .get('/auth/self')
-                .set('Cookie', [`accessToken=${accessToken};`])
+                .set('Cookie', [`accessToken=${accessToken}`])
                 .send()
 
             expect(response.statusCode).toBe(200)
@@ -65,7 +65,7 @@ describe('GET /auth/self', () => {
             // Add token to cookie
             const response = await request(app)
                 .get('/auth/self')
-                .set('Cookie', [`accessToken=${accessToken};`])
+                .set('Cookie', [`accessToken=${accessToken}`])
                 .send()
             // Assert
             // Check if user id matches with registered user
@@ -93,7 +93,7 @@ describe('GET /auth/self', () => {
             // Add token to cookie
             const response = await request(app)
                 .get('/auth/self')
-                .set('Cookie', [`accessToken=${accessToken};`])
+                .set('Cookie', [`accessToken=${accessToken}`])
                 .send()
             // Assert
             // Check if user id matches with registered user
