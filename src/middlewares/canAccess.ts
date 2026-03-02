@@ -1,0 +1,22 @@
+import { Request, Response, NextFunction } from 'express'
+import { AuthRequest } from '../types'
+import createHttpError from 'http-errors'
+
+export const canAccess = (roles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const _req = req as AuthRequest
+
+        const roleFromTOken = _req.auth.role
+
+        if (!roles.includes(roleFromTOken)) {
+            const error = createHttpError(
+                403,
+                "You don't have enough permission",
+            )
+
+            next(error)
+            return
+        }
+        next()
+    }
+}
