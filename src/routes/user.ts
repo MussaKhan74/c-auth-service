@@ -7,6 +7,7 @@ import { Roles } from '../constants'
 import { UserController } from '../controllers/UserController'
 import { UserService } from '../services/UserService'
 import { User } from '../entity/User'
+import { AuthRequest } from '../types'
 
 const router = express.Router()
 
@@ -25,6 +26,10 @@ router.get(
     authenticate,
     canAccess([Roles.ADMIN]),
     (req, res, next: NextFunction) => userController.getAll(res, next),
+)
+
+router.get('/:id', authenticate, canAccess([Roles.ADMIN]), (req, res, next) =>
+    userController.getOne(req as AuthRequest, res, next),
 )
 
 export default router
