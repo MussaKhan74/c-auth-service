@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { NextFunction } from 'express'
 import { AppDataSource } from '../config/data-source'
 import logger from '../config/logger'
 import authenticate from '../middlewares/authenticate'
@@ -19,6 +19,12 @@ router.post('/', authenticate, canAccess([Roles.ADMIN]), (req, res, next) =>
 )
 router.patch('/:id', authenticate, canAccess([Roles.ADMIN]), (req, res, next) =>
     userController.update(req, res, next),
+)
+router.get(
+    '/',
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    (req, res, next: NextFunction) => userController.getAll(res, next),
 )
 
 export default router
