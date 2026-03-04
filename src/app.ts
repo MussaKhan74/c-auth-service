@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/auth', authRouter)
-app.use('/tenant', tenantRouter)
+app.use('/tenants', tenantRouter)
 app.use('/users', userRouter)
 
 // global error handler.

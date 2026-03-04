@@ -44,7 +44,7 @@ describe('POST /tenants', () => {
             }
 
             const response = await request(app)
-                .post('./tenants')
+                .post('/tenants')
                 .set('Cookie', [`accessToken=${adminToken}`])
                 .send(tenantData)
 
@@ -57,14 +57,14 @@ describe('POST /tenants', () => {
             }
 
             await request(app)
-                .post('./tenants')
+                .post('/tenants')
                 .set('Cookie', [`accessToken=${adminToken}`])
                 .send(tenantData)
 
             const tenanRepository = connection.getRepository(Tenant)
             const tenants = await tenanRepository.find()
 
-            expect(tenants[0]).toHaveLength(1)
+            expect(tenants).toHaveLength(1)
             expect(tenants[0].name).toBe(tenantData.name)
             expect(tenants[0].address).toBe(tenantData.address)
         })
@@ -75,7 +75,7 @@ describe('POST /tenants', () => {
             }
 
             const response = await request(app)
-                .post('./tenants')
+                .post('/tenants')
                 .send(tenantData)
 
             expect(response.statusCode).toBe(401)
@@ -83,7 +83,7 @@ describe('POST /tenants', () => {
             const tenanRepository = connection.getRepository(Tenant)
             const tenants = await tenanRepository.find()
 
-            expect(tenants[0]).toHaveLength(0)
+            expect(tenants).toHaveLength(0)
         })
         it('should return 403 if user is not an admin', async () => {
             const tenantData = {
@@ -97,7 +97,7 @@ describe('POST /tenants', () => {
             })
 
             const response = await request(app)
-                .post('./tenants')
+                .post('/tenants')
                 .set('Cookie', [`accessToken=${managerToken}`])
                 .send(tenantData)
 
@@ -106,7 +106,9 @@ describe('POST /tenants', () => {
             const tenanRepository = connection.getRepository(Tenant)
             const tenants = await tenanRepository.find()
 
-            expect(tenants[0]).toHaveLength(0)
+            console.log(tenants)
+
+            expect(tenants).toHaveLength(0)
         })
     })
 })

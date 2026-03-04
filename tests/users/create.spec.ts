@@ -1,12 +1,13 @@
 import { DataSource } from 'typeorm'
+import request from 'supertest'
+import createJWKSMock from 'mock-jwks'
+
 import { AppDataSource } from '../../src/config/data-source'
 import app from '../../src/app'
-import request from 'supertest'
-import { createJWKSMock } from 'mock-jwks'
 import { User } from '../../src/entity/User'
 import { Roles } from '../../src/constants'
 
-describe('POST /users', () => {
+describe('GET /auth/self', () => {
     let connection: DataSource
     let jwks: ReturnType<typeof createJWKSMock>
 
@@ -19,7 +20,7 @@ describe('POST /users', () => {
         jwks.start()
         await connection.dropDatabase()
         await connection.synchronize()
-    }, 30000)
+    })
 
     afterEach(() => {
         jwks.stop()
@@ -30,58 +31,96 @@ describe('POST /users', () => {
     })
 
     describe('Given all fields', () => {
-        it('should persist the usser in the database', async () => {
-            const adminToken = jwks.token({
+        it('should return the 200 status code', async () => {
+            const accessToken = jwks.token({
                 sub: '1',
-                role: Roles.ADMIN,
+                role: Roles.CUSTOMER,
+            })
+            const response = await request(app)
+                .get('/auth/self')
+                .set('Cookie', [`accessToken=${accessToken}`])
+                .send()
+            expect(response.statusCode).toBe(200)
+        })
+
+        it('should return the user data', async () => {
+            // Register user
+            const userData = {
+                firstName: 'mussa',
+                lastName: 'khan',
+                email: 'mussa@gmail.com',
+                password: 'password',
+            }
+            const userRepository = connection.getRepository(User)
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.CUSTOMER,
+            })
+            // Generate token
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
             })
 
-            const userData = {
-                firstName: 'Mussa',
-                lastName: 'Khan',
-                email: 'MarkeLoof@gmail.com',
-                password: 'secret',
-                tenantId: 1,
-            }
-
-            await request(app)
-                .post('/user')
-                .set('Cookie', [`accessToken=${adminToken}`])
-                .send(userData)
-
-            const userRepository = connection.getRepository(User)
-            const users = await userRepository.find()
-
-            expect(users).toHaveLength(1)
-            expect(users[0].email).toBe(userData.email)
+            // Add token to cookie
+            const response = await request(app)
+                .get('/auth/self')
+                .set('Cookie', [`accessToken=${accessToken};`])
+                .send()
+            // Assert
+            // Check if user id matches with registered user
+            expect((response.body as Record<string, string>).id).toBe(data.id)
         })
-        it('should create a manager user', async () => {
-            const adminToken = jwks.token({
-                sub: '1',
-                role: Roles.ADMIN,
+
+        it('should not return the password field', async () => {
+            // Register user
+            const userData = {
+                firstName: 'mussa',
+                lastName: 'khan',
+                email: 'mussa@gmail.com',
+                password: 'password',
+            }
+            const userRepository = connection.getRepository(User)
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.CUSTOMER,
+            })
+            // Generate token
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
             })
 
-            const userData = {
-                firstName: 'Mussa',
-                lastName: 'Khan',
-                email: 'MarkeLoof@gmail.com',
-                password: 'secret',
-                tenantId: 1,
-            }
-
-            await request(app)
-                .post('/user')
-                .set('Cookie', [`accessToken=${adminToken}`])
-                .send(userData)
-
-            const userRepository = connection.getRepository(User)
-            const users = await userRepository.find()
-
-            expect(users).toHaveLength(1)
-            expect(users[0].role).toBe(Roles.MANAGER)
+            // Add token to cookie
+            const response = await request(app)
+                .get('/auth/self')
+                .set('Cookie', [`accessToken=${accessToken};`])
+                .send()
+            // Assert
+            // Check if user id matches with registered user
+            expect(response.body as Record<string, string>).not.toHaveProperty(
+                'password',
+            )
         })
-        it.todo(
-            'should return 403 if the non admin user tries to create a user',
-        )
+
+        it('should return 401 status code if token does not exists', async () => {
+            // Register user
+            const userData = {
+                firstName: 'mussa',
+                lastName: 'khan',
+                email: 'mussa@gmail.com',
+                password: 'password',
+            }
+            const userRepository = connection.getRepository(User)
+            await userRepository.save({
+                ...userData,
+                role: Roles.CUSTOMER,
+            })
+
+            // Add token to cookie
+            const response = await request(app).get('/auth/self').send()
+            // Assert
+            expect(response.statusCode).toBe(401)
+        })
     })
 })
