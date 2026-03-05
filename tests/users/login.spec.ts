@@ -1,5 +1,11 @@
 import { DataSource } from 'typeorm'
+import bcrypt from 'bcrypt'
+import request from 'supertest'
 import { AppDataSource } from '../../src/config/data-source'
+import app from '../../src/app'
+import { isJwt } from '../utils'
+import { User } from '../../src/entity/User'
+import { Roles } from '../../src/constants'
 
 describe('POST /auth/login', () => {
     let connection: DataSource
@@ -9,19 +15,87 @@ describe('POST /auth/login', () => {
     })
 
     beforeEach(async () => {
-        // Database truncate
         await connection.dropDatabase()
         await connection.synchronize()
-    }, 30000)
+    })
 
     afterAll(async () => {
         await connection.destroy()
     })
 
     describe('Given all fields', () => {
-        it.todo('should give 200 status code')
-        it.todo('should login the user')
+        it('should return the access token and refresh token inside a cookie', async () => {
+            // Arrange
+            const userData = {
+                firstName: 'mussa',
+                lastName: 'khan',
+                email: 'mussa@gmail.com',
+                password: 'password',
+            }
+
+            const hashedPassword = await bcrypt.hash(userData.password, 10)
+
+            const userRepository = connection.getRepository(User)
+            await userRepository.save({
+                ...userData,
+                password: hashedPassword,
+                role: Roles.CUSTOMER,
+            })
+
+            // Act
+            const response = await request(app)
+                .post('/auth/login')
+                .send({ email: userData.email, password: userData.password })
+
+            interface Headers {
+                ['set-cookie']: string[]
+            }
+            // Assert
+            let accessToken = null
+            let refreshToken = null
+            const cookies =
+                (response.headers as unknown as Headers)['set-cookie'] || []
+            cookies.forEach((cookie) => {
+                if (cookie.startsWith('accessToken=')) {
+                    accessToken = cookie.split(';')[0].split('=')[1]
+                }
+
+                if (cookie.startsWith('refreshToken=')) {
+                    refreshToken = cookie.split(';')[0].split('=')[1]
+                }
+            })
+            expect(accessToken).not.toBeNull()
+            expect(refreshToken).not.toBeNull()
+
+            expect(isJwt(accessToken)).toBeTruthy()
+            expect(isJwt(refreshToken)).toBeTruthy()
+        })
+        it('should return the 400 if email or password is wrong', async () => {
+            // Arrange
+            const userData = {
+                firstName: 'mussa',
+                lastName: 'khan',
+                email: 'mussa@gmail.com',
+                password: 'password',
+            }
+
+            const hashedPassword = await bcrypt.hash(userData.password, 10)
+
+            const userRepository = connection.getRepository(User)
+            await userRepository.save({
+                ...userData,
+                password: hashedPassword,
+                role: Roles.CUSTOMER,
+            })
+
+            // Act
+            const response = await request(app)
+                .post('/auth/login')
+                .send({ email: userData.email, password: 'wrongPassword' })
+
+            // Assert
+
+            expect(response.statusCode).toBe(400)
+        })
     })
-    describe('Fields are missing', () => {})
-    describe('Fields are not in proper format', () => {})
 })

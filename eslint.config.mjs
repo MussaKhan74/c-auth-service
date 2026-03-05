@@ -15,6 +15,7 @@ export default tseslint.config(
             '*.specs.ts',
             'tests',
             'scripts',
+            'coverage',
         ],
     },
     {
